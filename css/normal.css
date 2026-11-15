@@ -1,0 +1,14 @@
+/* ================= 半透明毛玻璃卡片 ================= */
+/* 参考 YangLuoNou 博客（Butterfly 主题）的视觉效果 */
+:root {
+  --card-bg: rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme='dark'] {
+  --card-bg: rgba(0, 0, 0, 0.5);
+}
+
+/* ================= 头像悬停不放大/不旋转 ================= */
+/* html .avatar-img img:hover {
+  transform: none !important;
+} */

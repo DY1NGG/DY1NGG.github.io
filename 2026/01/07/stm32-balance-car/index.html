@@ -1,0 +1,407 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>两轮平衡车：从 PID 调节到蓝牙遥控 | DY1NG</title><meta name="author" content="DY1NGG"><meta name="copyright" content="DY1NGG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从互补滤波、串级 PID 到蓝牙调参，记录一辆两轮平衡车的完整调试过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="两轮平衡车：从 PID 调节到蓝牙遥控">
+<meta property="og:url" content="https://dy1ngg.github.io/2026/01/07/stm32-balance-car/index.html">
+<meta property="og:site_name" content="DY1NG">
+<meta property="og:description" content="从互补滤波、串级 PID 到蓝牙调参，记录一辆两轮平衡车的完整调试过程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dy1ngg.github.io/img/avatar.png">
+<meta property="article:published_time" content="2026-01-07T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-13T12:16:54.124Z">
+<meta property="article:author" content="DY1NGG">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dy1ngg.github.io/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "两轮平衡车：从 PID 调节到蓝牙遥控",
+  "url": "https://dy1ngg.github.io/2026/01/07/stm32-balance-car/",
+  "image": "https://dy1ngg.github.io/img/avatar.png",
+  "datePublished": "2026-01-07T04:00:00.000Z",
+  "dateModified": "2026-11-13T12:16:54.124Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "DY1NGG",
+      "url": "https://DY1NGG.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dy1ngg.github.io/2026/01/07/stm32-balance-car/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.15/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        try {
+          const data = { value }
+
+          if (ttl != null) {
+            data.expiry = Date.now() + ttl * 86400000
+          }
+
+          localStorage.setItem(key, JSON.stringify(data))
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '两轮平衡车：从 PID 调节到蓝牙遥控',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/normal.css"><script>if (btf.saveToLocal.get('theme') === undefined) btf.activateDarkMode()</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://random-img-api.yangluonou.space/bg);"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">DY1NG</span></a><a class="nav-page-title" href="/"><span class="site-name">两轮平衡车：从 PID 调节到蓝牙遥控</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">两轮平衡车：从 PID 调节到蓝牙遥控<a class="post-edit-link" href="null_posts/stm32-balance-car.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-01-07T04:00:00.000Z" title="发表于 2026-01-07 12:00:00">2026-01-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-13T12:16:54.124Z" title="更新于 2026-11-13 20:16:54">2026-11-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>本项目基于 <strong>STM32F103C8T6</strong>，搭载 MPU6050 六轴姿态传感器和带霍尔编码器的直流减速电机，实现了稳定的自平衡站立与遥控行驶。项目使用 Keil MDK 开发，代码分为 Hardware（硬件驱动）、System（系统服务）和 User（应用逻辑）三层，模块划分清晰，便于移植和调试。</p>
+<h3 id="项目架构总览"><a href="#项目架构总览" class="headerlink" title="项目架构总览"></a>项目架构总览</h3><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User&#x2F;main.c</td>
+<td>主程序入口与控制逻辑</td>
+</tr>
+<tr>
+<td>User&#x2F;PID.c</td>
+<td>通用 PID 控制器</td>
+</tr>
+<tr>
+<td>Hardware&#x2F;MPU6050.c</td>
+<td>六轴传感器驱动（I2C）</td>
+</tr>
+<tr>
+<td>Hardware&#x2F;Motor.c</td>
+<td>TB6612 电机驱动（PWM）</td>
+</tr>
+<tr>
+<td>Hardware&#x2F;Encoder.c</td>
+<td>霍尔编码器速度采集</td>
+</tr>
+<tr>
+<td>Hardware&#x2F;BlueSerial.c</td>
+<td>蓝牙串口通信</td>
+</tr>
+<tr>
+<td>Hardware&#x2F;OLED.c</td>
+<td>0.96 寸 OLED 显示驱动</td>
+</tr>
+<tr>
+<td>System&#x2F;Timer.c</td>
+<td>定时器中断服务</td>
+</tr>
+</tbody></table>
+<h3 id="姿态解算：互补滤波"><a href="#姿态解算：互补滤波" class="headerlink" title="姿态解算：互补滤波"></a>姿态解算：互补滤波</h3><p>MPU6050 同时提供三轴加速度和三轴角速度。加速度计用 atan2(AX, AZ) 计算重力方向倾角，静态准确但动态噪声大；陀螺仪把角速度对时间积分得到角度，动态响应快，但会随温度漂移。</p>
+<p>项目实现了经典的<strong>互补滤波</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AngleAcc  = -atan2(AX, AZ) / π × 180 - 1;      // 加速度计角度</span><br><span class="line">if (AngleAcc &lt; 0) AngleAcc *= 0.8;              // 负角度非线性修正</span><br><span class="line">AngleGyro = Angle + GY / 32768 × 2000 × 0.01;   // 陀螺仪积分，dt = 10 ms</span><br><span class="line">Angle     = 0.01 × AngleAcc + 0.99 × AngleGyro; // 互补融合</span><br></pre></td></tr></table></figure>
+
+<p>滤波器由陀螺仪主导（99% 权重），加速度计只提供缓慢的长期校正（1% 权重），兼顾动态响应和静态精度。代码里还做了两项工程补偿：陀螺仪静态偏置减去 20 LSB；加速度计角度减去 1° 安装偏差，并对负角度乘 0.8。倾角超过 ±50° 时强制停机，防止电机失控。</p>
+<h3 id="串级-PID-控制"><a href="#串级-PID-控制" class="headerlink" title="串级 PID 控制"></a>串级 PID 控制</h3><p>单一角度环只能让车立起来，无法控制位置和速度。串级 PID 用内外环嵌套解决这个问题。</p>
+<p><strong>角度环（直立内环，最高优先级）</strong></p>
+<p>参数：<code>Kp = 11.5</code>，<code>Kd = 12</code>，<code>Ki = 0.05</code>。输入目标角度，反馈实际角度，输出 PWM 占空比（±100 限幅）。</p>
+<p>关键设计是<strong>微分先行</strong>（Derivative on Measurement）：Kd 项计算实际角度的变化率 <code>(p-&gt;Actual - p-&gt;Actual1)</code>，而不是误差的变化率 <code>(p-&gt;Error0 - p-&gt;Error1)</code>。这样目标值阶跃变化时不会产生巨大的微分冲击，是调试中踩坑换来的经验。</p>
+<p>积分项带 ±600 限幅。输出正向加偏移（OutOffset）、负向减偏移，补偿机械不对称。定时器每 1 ms 中断一次，角度环每 10 次中断（10 ms）执行一次。</p>
+<p><strong>速度环（平移外环）</strong></p>
+<p>参数：<code>Kp = 5</code>，<code>Ki = 0.025</code>，<code>Kd = 0</code>。输入目标速度，反馈编码器实测平均速度，输出角度环的目标角度（+20° ~ -15° 限幅），通过前倾&#x2F;后仰实现前进&#x2F;后退。速度是慢变量，每 50 次中断（50 ms）执行一次即可，积分限幅 ±150。</p>
+<p><strong>转向环（独立差速）</strong></p>
+<p>参数：<code>Kp = 4</code>，<code>Ki = 3</code>，<code>Kd = 0</code>。输入目标差速，反馈左右轮实测差速，输出差速 PWM（±100 限幅），与角度环、速度环并行运行，互不干扰。</p>
+<p><strong>电机 PWM 合成：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LeftPWM  = +AvePWM + DifPWM / 2;   // 限幅 ±100</span><br><span class="line">RightPWM = +AvePWM - DifPWM / 2;   // 限幅 ±100</span><br></pre></td></tr></table></figure>
+
+<p>AvePWM 来自角度环，DifPWM 来自转向环，差速叠加实现转向。整条链路是：速度环算出目标角度 → 角度环算出目标 PWM → 转向环叠加差速 → 驱动电机。三个环的参数都能通过蓝牙在线调节。</p>
+<h3 id="PID-控制器实现"><a href="#PID-控制器实现" class="headerlink" title="PID 控制器实现"></a>PID 控制器实现</h3><p>PID.c 是可复用的通用模块。PID_t 结构体保存 Target、Actual、Kp&#x2F;Ki&#x2F;Kd、积分值、Error0&#x2F;Error1、Output 和限幅等全部状态，每次调用 PID_Update() 执行标准位置式 PID：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Error  = Target - Actual;</span><br><span class="line">Int   += Error;                  // 积分累加并限幅</span><br><span class="line">Out    = Kp×Error + Ki×Int - Kd×(Actual - Actual1);</span><br><span class="line">Out   += sign(Out)×Offset;       // 偏置补偿</span><br><span class="line">Out    = clamp(Out, -Max, +Max);</span><br></pre></td></tr></table></figure>
+
+<p>Ki &#x3D; 0 时自动清零积分项，避免残余积分干扰；PID_Init() 在启动时清空所有状态，防止上次运行的状态残留。</p>
+<h3 id="蓝牙遥控协议"><a href="#蓝牙遥控协议" class="headerlink" title="蓝牙遥控协议"></a>蓝牙遥控协议</h3><p>通过 HC-05 蓝牙串口模块实现无线控制。自定义文本协议，帧格式为逗号分隔的 Tag + 参数：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>格式</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>摇杆</td>
+<td>joystick,LH,LV,RH,RV</td>
+<td>左手控制速度，右手控制转向</td>
+</tr>
+<tr>
+<td>滑块</td>
+<td>slider,Name,Value</td>
+<td>实时调节 AngleKp&#x2F;Ki&#x2F;Kd、SpeedKp&#x2F;Ki&#x2F;Kd、TurnKp&#x2F;Ki&#x2F;Kd、Offset 等 10 个参数</td>
+</tr>
+<tr>
+<td>方向键</td>
+<td>G&#x2F;D&#x2F;L&#x2F;R</td>
+<td>前进&#x2F;后退&#x2F;左转&#x2F;右转，每次步进 0.1</td>
+</tr>
+<tr>
+<td>停止</td>
+<td>X</td>
+<td>所有目标值清零</td>
+</tr>
+</tbody></table>
+<p>用 strtok() 按逗号解析，再按 Tag 分发。文本协议简单可靠，用串口助手就能手动调试，不需要额外上位机。</p>
+<h3 id="硬件清单"><a href="#硬件清单" class="headerlink" title="硬件清单"></a>硬件清单</h3><table>
+<thead>
+<tr>
+<th>部件</th>
+<th>型号&#x2F;参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主控</td>
+<td>STM32F103C8T6（72 MHz Cortex-M3，64 KB Flash，20 KB SRAM）</td>
+</tr>
+<tr>
+<td>姿态传感器</td>
+<td>MPU6050（三轴加速度 + 三轴陀螺仪，I2C）</td>
+</tr>
+<tr>
+<td>电机驱动</td>
+<td>TB6612FNG（双路 H 桥，1.2 A 持续电流）</td>
+</tr>
+<tr>
+<td>电机</td>
+<td>直流减速电机 ×2（1:30 减速比，霍尔编码器 44 线&#x2F;圈）</td>
+</tr>
+<tr>
+<td>蓝牙</td>
+<td>HC-05 串口蓝牙模块</td>
+</tr>
+<tr>
+<td>显示</td>
+<td>0.96 寸 OLED（128×64，SPI）</td>
+</tr>
+<tr>
+<td>按键</td>
+<td>启动&#x2F;停止切换</td>
+</tr>
+</tbody></table>
+<h3 id="调试经验"><a href="#调试经验" class="headerlink" title="调试经验"></a>调试经验</h3><p>调通这辆平衡车花了不少时间，几个关键经验：</p>
+<ol>
+<li><strong>先调角度环，再加速度环。</strong> 角度环是基础，车都立不住时，速度环只会添乱。Kp 从 5 开始慢慢加，加到车身能小幅低频振荡但不会倒下，再用 Kd 把振荡压掉。Ki 最后加，一点点就够（0.05 已经很小）。</li>
+<li><strong>微分先行很有必要。</strong> 一开始用误差微分（Error0 - Error1），目标值一变电机就剧烈抖动；改成测量值微分后立刻平稳。这个坑踩了一下午。</li>
+<li><strong>蓝牙调参是神器。</strong> 不用反复编译烧录，手机上拖滑块就能看到效果。10 个 PID 参数加 1 个偏置全部能在线调，调参从「编译—烧录—观察—循环」变成「边看边调」。</li>
+<li><strong>编码器方向要验证。</strong> 左轮正转对应正速度，右轮正转对应负速度（电机安装方向相反），所以 Enc_Get(2) 要取负。符号搞错，车会原地疯狂自旋。</li>
+<li><strong>中断里别做太重的事。</strong> MPU6050 的 I2C 读取在 TIM1 中断里完成，时序太长会拖慢中断响应。所以读姿态 + PID 运算放在 10 ms 一次，速度计算放在 50 ms 一次。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://DY1NGG.github.io">DY1NGG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dy1ngg.github.io/2026/01/07/stm32-balance-car/">https://dy1ngg.github.io/2026/01/07/stm32-balance-car/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://DY1NGG.github.io" target="_blank">DY1NG</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/04/03/rct6-ai-line-follower/" title="K230联动F103RCT6视觉初学习"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">K230联动F103RCT6视觉初学习</div></div><div class="info-2"><div class="info-item-1">在 STM32F103RCT6（256 KB Flash &#x2F; 48 KB SRAM）的基础上，这一版引入了 K230 AI 视觉芯片作为协处理器，并换用增量式 PID、AI 距离感知和自适应速度调节。 双芯架构：STM32 + K230最大的变化是双芯片协作。K230 是嘉楠科技（Canaan）的 AI 视觉芯片，集成 2 个 RISC-V 核心和 KPU（Knowledge Processing Unit），可以运行目标检测、深度估计等模型。 通信走 USART1（115200 bps）：K230 持续发送 Dist: XXX cm\r\n 文本帧，STM32 在 USART1 中断里接收，由 Serial_GetDistance() 解析成浮点距离（无目标时返回 -1.0）。协议虽然简单，但两根信号线（TX&#x2F;RX）就能把两块芯片连起来。 增量式 PID：从位置式到增量式之前的项目一直用位置式 PID。它能跑，但速度环里容易出现积分饱和和输出突变。RCT6 版本在内环（速度环、转向环）换成了增量式： 12Δu(k) = Kp×[e(k)-e(k-1)] + ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">DY1NGG</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/DY1NGG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/DY1NGG" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">项目架构总览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A7%BF%E6%80%81%E8%A7%A3%E7%AE%97%EF%BC%9A%E4%BA%92%E8%A1%A5%E6%BB%A4%E6%B3%A2"><span class="toc-number">2.</span> <span class="toc-text">姿态解算：互补滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B2%E7%BA%A7-PID-%E6%8E%A7%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">串级 PID 控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PID-%E6%8E%A7%E5%88%B6%E5%99%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.</span> <span class="toc-text">PID 控制器实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%93%9D%E7%89%99%E9%81%A5%E6%8E%A7%E5%8D%8F%E8%AE%AE"><span class="toc-number">5.</span> <span class="toc-text">蓝牙遥控协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%B8%85%E5%8D%95"><span class="toc-number">6.</span> <span class="toc-text">硬件清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E7%BB%8F%E9%AA%8C"><span class="toc-number">7.</span> <span class="toc-text">调试经验</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/15/wsl/" title="WSL + VS Code：在 Windows 上搭一套顺手的 Linux 开发环境">WSL + VS Code：在 Windows 上搭一套顺手的 Linux 开发环境</a><time datetime="2026-11-15T11:05:29.000Z" title="发表于 2026-11-15 19:05:29">2026-11-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/13/hello-world/" title="Hello World">Hello World</a><time datetime="2026-11-13T12:17:28.801Z" title="发表于 2026-11-13 20:17:28">2026-11-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/13/xinput/" title="自制手柄：XInput 协议与摇杆校准">自制手柄：XInput 协议与摇杆校准</a><time datetime="2026-09-13T12:08:25.000Z" title="发表于 2026-09-13 20:08:25">2026-09-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/26/32mc-esp32-minecraft/" title="在 ESP32S3N16R8 上运行 Minecraft 客户端">在 ESP32S3N16R8 上运行 Minecraft 客户端</a><time datetime="2026-05-26T04:00:00.000Z" title="发表于 2026-05-26 12:00:00">2026-05-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/esp32-mc-firmware-package/" title="在单片机上运行 Minecraft 服务端，实现单片机开服">在单片机上运行 Minecraft 服务端，实现单片机开服</a><time datetime="2026-05-13T04:00:00.000Z" title="发表于 2026-05-13 12:00:00">2026-05-13</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(https://random-img-api.yangluonou.space/footer);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By DY1NGG</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.2"></script><script src="/js/main.js?v=5.7.2"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.15/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([data-fancybox])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      if (!item.parentNode) return
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || ''
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    const responseURL = e.request && e.request.responseURL
+    if (e.request && e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : responseURL && (window.location.href = responseURL)
+    } else if (responseURL) {
+      window.location.href = responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>K230联动F103RCT6视觉初学习 | DY1NG</title><meta name="author" content="DY1NGG"><meta name="copyright" content="DY1NGG"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="STM32F103RCT6 + K230 AI 视觉芯片，双芯协作的视觉巡线小车。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="K230联动F103RCT6视觉初学习">
+<meta property="og:url" content="https://dy1ngg.github.io/2026/04/03/rct6-ai-line-follower/index.html">
+<meta property="og:site_name" content="DY1NG">
+<meta property="og:description" content="STM32F103RCT6 + K230 AI 视觉芯片，双芯协作的视觉巡线小车。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dy1ngg.github.io/img/avatar.png">
+<meta property="article:published_time" content="2026-04-03T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-13T12:17:00.147Z">
+<meta property="article:author" content="DY1NGG">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dy1ngg.github.io/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "K230联动F103RCT6视觉初学习",
+  "url": "https://dy1ngg.github.io/2026/04/03/rct6-ai-line-follower/",
+  "image": "https://dy1ngg.github.io/img/avatar.png",
+  "datePublished": "2026-04-03T04:00:00.000Z",
+  "dateModified": "2026-11-13T12:17:00.147Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "DY1NGG",
+      "url": "https://DY1NGG.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dy1ngg.github.io/2026/04/03/rct6-ai-line-follower/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.15/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        try {
+          const data = { value }
+
+          if (ttl != null) {
+            data.expiry = Date.now() + ttl * 86400000
+          }
+
+          localStorage.setItem(key, JSON.stringify(data))
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'K230联动F103RCT6视觉初学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/normal.css"><script>if (btf.saveToLocal.get('theme') === undefined) btf.activateDarkMode()</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://random-img-api.yangluonou.space/bg);"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">DY1NG</span></a><a class="nav-page-title" href="/"><span class="site-name">K230联动F103RCT6视觉初学习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">K230联动F103RCT6视觉初学习<a class="post-edit-link" href="null_posts/rct6-ai-line-follower.md" title="编辑" target="_blank"><i class="fas fa-pencil-alt"></i></a></h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-04-03T04:00:00.000Z" title="发表于 2026-04-03 12:00:00">2026-04-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-13T12:17:00.147Z" title="更新于 2026-11-13 20:17:00">2026-11-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>在 STM32F103RCT6（256 KB Flash &#x2F; 48 KB SRAM）的基础上，这一版引入了 K230 AI 视觉芯片作为协处理器，并换用增量式 PID、AI 距离感知和自适应速度调节。</p>
+<h3 id="双芯架构：STM32-K230"><a href="#双芯架构：STM32-K230" class="headerlink" title="双芯架构：STM32 + K230"></a>双芯架构：STM32 + K230</h3><p>最大的变化是双芯片协作。K230 是嘉楠科技（Canaan）的 AI 视觉芯片，集成 2 个 RISC-V 核心和 KPU（Knowledge Processing Unit），可以运行目标检测、深度估计等模型。</p>
+<p>通信走 USART1（115200 bps）：K230 持续发送 <code>Dist: XXX cm\r\n</code> 文本帧，STM32 在 USART1 中断里接收，由 <code>Serial_GetDistance()</code> 解析成浮点距离（无目标时返回 -1.0）。协议虽然简单，但两根信号线（TX&#x2F;RX）就能把两块芯片连起来。</p>
+<h3 id="增量式-PID：从位置式到增量式"><a href="#增量式-PID：从位置式到增量式" class="headerlink" title="增量式 PID：从位置式到增量式"></a>增量式 PID：从位置式到增量式</h3><p>之前的项目一直用位置式 PID。它能跑，但速度环里容易出现积分饱和和输出突变。RCT6 版本在内环（速度环、转向环）换成了增量式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Δu(k) = Kp×[e(k)-e(k-1)] + Ki×e(k) + Kd×[e(k)-2e(k-1)+e(k-2)]</span><br><span class="line">u(k)  = u(k-1) + Δu(k)</span><br></pre></td></tr></table></figure>
+
+<p>增量式输出的是增量而非绝对值，天然无冲击；没有显式积分累加器，不会积分饱和；适合电机速度这类需要平滑调节的对象。巡线环仍然用位置式，两种模式各管一块。</p>
+<h3 id="自适应速度控制"><a href="#自适应速度控制" class="headerlink" title="自适应速度控制"></a>自适应速度控制</h3><p>K230 返回的距离不只用来看障碍，还直接参与速度决策：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (distance &gt;= 20 &amp;&amp; distance &lt;= 23)                        → 基准速度</span><br><span class="line">else if (distance &gt;= 55 || distance &lt;= 2 || distance == -1)  → 基准速度 + 1</span><br><span class="line">else                                                         → 基准速度 + (distance - 21) / 4</span><br></pre></td></tr></table></figure>
+
+<p>距离在 20–23 cm 的最佳区间时保持基准速度；距离变远，按 <code>(distance - 21) / 4</code> 逐档加速追赶；距离变近则减速；当距离 ≥ 55 cm、≤ 2 cm 或丢失目标时，退回基准速度 + 1 的兜底值。系统预设了 5 种速度档位（flag01&#x2F;03&#x2F;05&#x2F;06&#x2F;20），基准速度分别为 10&#x2F;12&#x2F;15&#x2F;15&#x2F;20，对应不同难度的赛道。</p>
+<h3 id="7-阶段自主导航状态机"><a href="#7-阶段自主导航状态机" class="headerlink" title="7 阶段自主导航状态机"></a>7 阶段自主导航状态机</h3><p>相比 cccar 的 6 阶段，这一版更复杂，用编码器累计里程（hh）作为阶段切换条件：</p>
+<table>
+<thead>
+<tr>
+<th>sum</th>
+<th>模式</th>
+<th>切换条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>flag03 中速 + flag77 巡线右偏</td>
+<td>hh ≥ 86</td>
+</tr>
+<tr>
+<td>1</td>
+<td>flag77 巡线右偏</td>
+<td>hh ≤ 60 回退 &#x2F; hh ≥ 110 前进</td>
+</tr>
+<tr>
+<td>2</td>
+<td>flag77 巡线右偏</td>
+<td>hh ≤ 70 回退 &#x2F; hh ≥ 340 前进</td>
+</tr>
+<tr>
+<td>3</td>
+<td>flag77&#x3D;0 正常巡线</td>
+<td>hh ≤ 280 回退 &#x2F; hh ≥ 800 前进</td>
+</tr>
+<tr>
+<td>4</td>
+<td>flag03 中速</td>
+<td>hh ≤ 750 回退 &#x2F; hh ≥ 820 前进</td>
+</tr>
+<tr>
+<td>5</td>
+<td>flag06 高速 + LED 提示</td>
+<td>hh ≤ 760 回退 &#x2F; hh ≥ 1000 前进</td>
+</tr>
+<tr>
+<td>6</td>
+<td>flag03 中速 + 关 LED</td>
+<td>hh ≤ 910 回退</td>
+</tr>
+</tbody></table>
+<p>状态机支持「回退」：累计里程不仅能向前推进，也能向后退回（例如 hh ≤ 60 时 sum 从 1 退回 0），赛道分段出错时能自动纠偏。每次阶段切换都通过蓝牙打印 <code>ee+</code> &#x2F; <code>ee-</code> 日志，方便现场调试。</p>
+<h3 id="4-路独立按键-蓝牙遥控"><a href="#4-路独立按键-蓝牙遥控" class="headerlink" title="4 路独立按键 + 蓝牙遥控"></a>4 路独立按键 + 蓝牙遥控</h3><p>4 个物理按键对应 4 种预设模式（t1–t4），每个模式激活不同的 flag 组合和速度策略。蓝牙也支持按键模拟（发送 “1” &#x2F; “2” &#x2F; “3” &#x2F; “4”）。另外新增了 “s” 紧急停车（清空所有 flag、倒车 -5 档、延迟 200 ms 后关机）和 “5” 重新启动并开启蜂鸣器。</p>
+<h3 id="硬件升级：从-C8T6-到-RCT6"><a href="#硬件升级：从-C8T6-到-RCT6" class="headerlink" title="硬件升级：从 C8T6 到 RCT6"></a>硬件升级：从 C8T6 到 RCT6</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>STM32F103C8T6</th>
+<th>STM32F103RCT6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Flash</td>
+<td>64 KB</td>
+<td>256 KB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td>20 KB</td>
+<td>48 KB</td>
+</tr>
+<tr>
+<td>GPIO</td>
+<td>37</td>
+<td>51</td>
+</tr>
+<tr>
+<td>USART</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>定时器</td>
+<td>3 通用 + 1 高级</td>
+<td>4 通用 + 2 高级 + 2 基本</td>
+</tr>
+</tbody></table>
+<p>RCT6 的 48 KB SRAM 和 256 KB Flash 给 AI 数据缓冲区、大数组和复杂逻辑留足了空间；5 个 USART 则让 K230、蓝牙、调试串口和灰度传感器可以同时在线。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://DY1NGG.github.io">DY1NGG</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dy1ngg.github.io/2026/04/03/rct6-ai-line-follower/">https://dy1ngg.github.io/2026/04/03/rct6-ai-line-follower/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://DY1NGG.github.io" target="_blank">DY1NG</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/05/10/cccar-stm32-self-driving/" title="MPU6050 DMP 姿态解算与轮式机器人定向运动"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">MPU6050 DMP 姿态解算与轮式机器人定向运动</div></div><div class="info-2"><div class="info-item-1">cccar 是巡线小车项目的全面升级版。在基础差速驱动之上，它加入了 MPU6050 DMP 姿态解算（输出 Yaw 航向角）、8 路灰度传感器巡线、多 PID 串级控制和一套 6 阶段自主导航状态机，让一辆四轮差速小车有了「自动驾驶」的能力。 从互补滤波到 DMP之前的平衡车项目用手写互补滤波，cccar 则改用 MPU6050 内置的 DMP（Digital Motion Processor）。DMP 是芯片内部的硬件运算单元，融合加速度计和陀螺仪数据后直接输出四元数，再转换成欧拉角（Pitch &#x2F; Roll &#x2F; Yaw）。 DMP 的 Yaw 角会随时间漂移，但短期稳定性远好于手动互补滤波。配合 inv_mpu.c 和 inv_mpu_dmp_motion_driver.c 驱动库，MPU6050_ReadDMP() 每 20 ms 读取一次姿态。Yaw 用于航向锁定和弯道检测，是自主导航的关键信息。 5 个 PID 环协同工作   PID Kp Ki Kd 作用    AnglePID 12 0.05 20 直立环（备用，DMP 模式下不直接使用）  ...</div></div></div></a><a class="pagination-related" href="/2026/01/07/stm32-balance-car/" title="两轮平衡车：从 PID 调节到蓝牙遥控"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">两轮平衡车：从 PID 调节到蓝牙遥控</div></div><div class="info-2"><div class="info-item-1">本项目基于 STM32F103C8T6，搭载 MPU6050 六轴姿态传感器和带霍尔编码器的直流减速电机，实现了稳定的自平衡站立与遥控行驶。项目使用 Keil MDK 开发，代码分为 Hardware（硬件驱动）、System（系统服务）和 User（应用逻辑）三层，模块划分清晰，便于移植和调试。 项目架构总览   文件 说明    User&#x2F;main.c 主程序入口与控制逻辑   User&#x2F;PID.c 通用 PID 控制器   Hardware&#x2F;MPU6050.c 六轴传感器驱动（I2C）   Hardware&#x2F;Motor.c TB6612 电机驱动（PWM）   Hardware&#x2F;Encoder.c 霍尔编码器速度采集   Hardware&#x2F;BlueSerial.c 蓝牙串口通信   Hardware&#x2F;OLED.c 0.96 寸 OLED 显示驱动   System&#x2F;Timer.c 定时器中断服务   姿态解算：互补滤波MPU6050 同时提供三轴加速度和三轴角速度。加速度计用 atan2(AX,...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">DY1NGG</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/DY1NGG"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/DY1NGG" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E8%8A%AF%E6%9E%B6%E6%9E%84%EF%BC%9ASTM32-K230"><span class="toc-number">1.</span> <span class="toc-text">双芯架构：STM32 + K230</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A2%9E%E9%87%8F%E5%BC%8F-PID%EF%BC%9A%E4%BB%8E%E4%BD%8D%E7%BD%AE%E5%BC%8F%E5%88%B0%E5%A2%9E%E9%87%8F%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">增量式 PID：从位置式到增量式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6"><span class="toc-number">3.</span> <span class="toc-text">自适应速度控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E9%98%B6%E6%AE%B5%E8%87%AA%E4%B8%BB%E5%AF%BC%E8%88%AA%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">4.</span> <span class="toc-text">7 阶段自主导航状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%B7%AF%E7%8B%AC%E7%AB%8B%E6%8C%89%E9%94%AE-%E8%93%9D%E7%89%99%E9%81%A5%E6%8E%A7"><span class="toc-number">5.</span> <span class="toc-text">4 路独立按键 + 蓝牙遥控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8D%87%E7%BA%A7%EF%BC%9A%E4%BB%8E-C8T6-%E5%88%B0-RCT6"><span class="toc-number">6.</span> <span class="toc-text">硬件升级：从 C8T6 到 RCT6</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/15/wsl/" title="WSL + VS Code：在 Windows 上搭一套顺手的 Linux 开发环境">WSL + VS Code：在 Windows 上搭一套顺手的 Linux 开发环境</a><time datetime="2026-11-15T11:05:29.000Z" title="发表于 2026-11-15 19:05:29">2026-11-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/13/hello-world/" title="Hello World">Hello World</a><time datetime="2026-11-13T12:17:28.801Z" title="发表于 2026-11-13 20:17:28">2026-11-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/13/xinput/" title="自制手柄：XInput 协议与摇杆校准">自制手柄：XInput 协议与摇杆校准</a><time datetime="2026-09-13T12:08:25.000Z" title="发表于 2026-09-13 20:08:25">2026-09-13</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/26/32mc-esp32-minecraft/" title="在 ESP32S3N16R8 上运行 Minecraft 客户端">在 ESP32S3N16R8 上运行 Minecraft 客户端</a><time datetime="2026-05-26T04:00:00.000Z" title="发表于 2026-05-26 12:00:00">2026-05-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/13/esp32-mc-firmware-package/" title="在单片机上运行 Minecraft 服务端，实现单片机开服">在单片机上运行 Minecraft 服务端，实现单片机开服</a><time datetime="2026-05-13T04:00:00.000Z" title="发表于 2026-05-13 12:00:00">2026-05-13</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(https://random-img-api.yangluonou.space/footer);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By DY1NGG</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.2"></script><script src="/js/main.js?v=5.7.2"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.15/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"]):not([data-fancybox])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      if (!item.parentNode) return
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || ''
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    const responseURL = e.request && e.request.responseURL
+    if (e.request && e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : responseURL && (window.location.href = responseURL)
+    } else if (responseURL) {
+      window.location.href = responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
